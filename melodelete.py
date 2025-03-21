@@ -59,8 +59,8 @@ class Melodelete(commands.Bot):
                     # The time to reset is assumed to apply equally to every
                     # request before this one.
                     rate_limit = float(params.response.headers["X-RateLimit-Reset-After"]) / int(params.response.headers["X-RateLimit-Limit"])
-                    self.config.set_rate_limit(rate_limit)
-                    logger.info(f"Rate limit is now {rate_limit} seconds")
+                    #self.config.set_rate_limit(rate_limit)
+                    #logger.info(f"Rate limit is now {rate_limit} seconds")
             except ValueError:
                 logger.warn(f"Rate-limiting header values malformed (X-RateLimit-Reset-After: {params.response.headers['X-RateLimit-Reset-After']}; X-RateLimit-Limit: {params.response.headers['X-RateLimit-Limit']}; X-RateLimit-Remaining: {params.response.headers['X-RateLimit-Remaining']})")
             except KeyError:
@@ -149,7 +149,8 @@ class Melodelete(commands.Bot):
                 await asyncio.sleep(self.config.get_rate_limit())
                 await channel.delete_messages(messages)
             except discord.NotFound as e:  # only if it resolves to a single message
-                logger.info(f"Message ID {messages[0].id} in #{channel.name} (ID: {channel.id}) was deleted since scanning")
+                ...
+                #logger.info(f"Message ID {messages[0].id} in #{channel.name} (ID: {channel.id}) was deleted since scanning")
             except discord.ClientException as e:
                 logger.exception(f"Failed to bulk delete {len(messages)} messages in #{channel.name} (ID: {channel.id}) due to the API considering the count to be too large; falling back to individual deletions", exc_info=e)
                 for message in messages:
@@ -169,7 +170,8 @@ class Melodelete(commands.Bot):
             await asyncio.sleep(self.config.get_rate_limit())
             await message.delete()
         except discord.NotFound as e:
-            logger.info(f"Message ID {message.id} in #{message.channel.name} (ID: {message.channel.id}) was deleted since scanning")
+            ...
+            #logger.info(f"Message ID {message.id} in #{message.channel.name} (ID: {message.channel.id}) was deleted since scanning")
         except discord.HTTPException as e:
             logger.exception(f"Failed to delete message ID {message.id} in #{message.channel.name} (ID: {message.channel.id})", exc_info=e)
 
