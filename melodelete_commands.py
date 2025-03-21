@@ -105,7 +105,7 @@ class AutodeleteCommands(app_commands.Group):
                            bulkmin="Number of messages to require for Bulk Delete Messages (shows up in the Audit Log)")
     @allowed_roles_only()
     async def serverconfig(self, interaction: discord.Interaction,
-                     scandelay: Optional[app_commands.Range[int, 2]], bulkmin: Optional[app_commands.Range[int, 2]]) -> None:
+                     scandelay: Optional[app_commands.Range[int, 0]], bulkmin: Optional[app_commands.Range[int, 0]]) -> None:
         """View or set the server's auto-delete settings"""
         if bulkmin is None and scandelay is None:
             bulkmin = self.config.get_bulk_delete_min()

@@ -87,7 +87,7 @@ class Melodelete(commands.Bot):
                 await self.delete_old_messages()
             except Exception as e:
                 logger.exception("Uncaught exception in main loop iteration; waiting until the next one", e)
-            await asyncio.sleep(max(self.config.get_scan_interval(), 2) * 60)
+            await asyncio.sleep(max(self.config.get_scan_interval(), 0) * 60)
 
     async def on_raw_message_delete(self, payload: discord.RawMessageDeleteEvent) -> None:
         channel = self.get_channel(payload.channel_id) or await self.fetch_channel(payload.channel_id)
