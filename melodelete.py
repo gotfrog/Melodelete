@@ -100,7 +100,8 @@ class Melodelete(commands.Bot):
         channel = self.get_channel(payload.channel_id) or await self.fetch_channel(payload.channel_id)
 
         if channel and self.config.is_channel_set(payload.channel_id):
-            logger.info(f"{len(payload.message_ids)} messages deleted in #{channel.name} (ID: {payload.channel_id})")
+            ...
+            #logger.info(f"{len(payload.message_ids)} messages deleted in #{channel.name} (ID: {payload.channel_id})")
 
     async def get_channel_deletable_messages(self, channel, time_threshold: Optional[int], max_messages: Optional[int], enable_indiscriminate_delete:bool=False) -> Sequence[discord.Message]:
         """Scans the given channel for messages that can be deleted given the current
@@ -225,10 +226,11 @@ class Melodelete(commands.Bot):
             if channel:
                 try:
                     deletable_messages = await self.get_channel_deletable_messages(channel, time_threshold=time_threshold, max_messages=max_messages,enable_indiscriminate_delete=indiscriminate_delete)
-                    logger.info(f"#{channel.name} (ID: {channel_id}) has {len(deletable_messages)} messages to delete.")
+                    #logger.info(f"#{channel.name} (ID: {channel_id}) has {len(deletable_messages)} messages to delete.")
                     to_delete.append((channel, deletable_messages))
                 except Exception as e:
-                    logger.exception(f"Failed to scan for messages to delete in #{channel.name} (ID: {channel_id})", exc_info=e)
+                    ...
+                    # logger.exception(f"Failed to scan for messages to delete in #{channel.name} (ID: {channel_id})", exc_info=e)
             else:
                 logger.error(f"Channel not found: {channel_id}; removing from auto-delete")
                 self.config.clear_channel(channel_id)
