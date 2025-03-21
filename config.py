@@ -131,7 +131,7 @@ class Config:
         except ValueError:
             pass
 
-    def set_channel(self, channel_id: int, time_threshold: Optional[int], max_messages: Optional[int]) -> None:
+    def set_channel(self, channel_id: int, time_threshold: Optional[int], max_messages: Optional[int], enable_indiscriminate_delete: Optional[bool]) -> None:
         """Sets the autodelete configuration for a channel to the given values.
 
            In:
@@ -147,10 +147,13 @@ class Config:
 
         channel.pop("time_threshold", None)  # prepare for resetting
         channel.pop("max_messages", None)    # these two attributes
+        channel.pop("indiscriminate_delete_enabled",False)
         if time_threshold is not None:
             channel["time_threshold"] = time_threshold
         if max_messages is not None:
             channel["max_messages"] = max_messages
+        if enable_indiscriminate_delete is not None:
+            channel["indiscriminate_delete_enabled"] = enable_indiscriminate_delete
 
         self.save_config()
 

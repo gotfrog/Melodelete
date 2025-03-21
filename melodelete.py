@@ -101,7 +101,7 @@ class Melodelete(commands.Bot):
         if channel and self.config.is_channel_set(payload.channel_id):
             logger.info(f"{len(payload.message_ids)} messages deleted in #{channel.name} (ID: {payload.channel_id})")
 
-    async def get_channel_deletable_messages(self, channel, time_threshold: Optional[int], max_messages: Optional[int]) -> Sequence[discord.Message]:
+    async def get_channel_deletable_messages(self, channel, time_threshold: Optional[int], max_messages: Optional[int], enable_indiscriminate_delete:bool=False) -> Sequence[discord.Message]:
         """Scans the given channel for messages that can be deleted given the current
            configuration and returns a sequence of those messages.
 
@@ -115,6 +115,9 @@ class Melodelete(commands.Bot):
              A sequence of discord.Message objects that represent deletable
              messages."""
         messages = []  # fallback if no criteria
+        if enable_indiscriminate_delete: # will delete all messages except for pinned, regardless of time or message limit
+            return [message async for message in channel.history(limit=None, oldest_first=True) if not message.pinned]
+
         if time_threshold is not None:  # and max_messages is to be determined
             time_cutoff = datetime.now(timezone.utc) - timedelta(minutes=time_threshold)
             if max_messages:  # if both criteria
@@ -211,13 +214,14 @@ class Melodelete(commands.Bot):
             channel_config = self.config.get_channel_config(channel_id)
             time_threshold = channel_config.get("time_threshold", None)
             max_messages = channel_config.get("max_messages", None)
+            indiscriminate_delete = channel_config.get("indiscriminate_delete_enabled",False)
             try:
                 channel = self.get_channel(channel_id) or await self.fetch_channel(channel_id)
             except discord.NotFound:
                 channel = None
             if channel:
                 try:
-                    deletable_messages = await self.get_channel_deletable_messages(channel, time_threshold=time_threshold, max_messages=max_messages)
+                    deletable_messages = await self.get_channel_deletable_messages(channel, time_threshold=time_threshold, max_messages=max_messages,enable_indiscriminate_delete=indiscriminate_delete)
                     logger.info(f"#{channel.name} (ID: {channel_id}) has {len(deletable_messages)} messages to delete.")
                     to_delete.append((channel, deletable_messages))
                 except Exception as e:

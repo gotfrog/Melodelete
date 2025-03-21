@@ -59,12 +59,12 @@ class AutodeleteCommands(app_commands.Group):
                            messages="Set the maximum number of recent messages to keep")
     @allowed_roles_only()
     async def config(self, interaction: discord.Interaction,
-                     channel: Optional[discord.TextChannel], hours: Optional[int], messages: Optional[int]) -> None:
+                     channel: Optional[discord.TextChannel], hours: Optional[int], messages: Optional[int],enable_indiscriminate_delete: Optional[bool]) -> None:
         """View or set a channel's auto-delete settings"""
         if channel is None:
             channel = interaction.channel
 
-        if hours is None and messages is None:
+        if hours is None and messages is None and enable_indiscriminate_delete is None:
             channel_config = self.config.get_channel_config(channel.id)
             if channel_config is not None:
                 time_threshold_hours = f"{channel_config['time_threshold'] // 60} hours" if "time_threshold" in channel_config and channel_config["time_threshold"] is not None else "Not set"
@@ -73,19 +73,26 @@ class AutodeleteCommands(app_commands.Group):
             else:  # channel not found
                 await interaction.response.send_message(f"{channel.mention} is not configured for auto-delete.")
         else:
+            if enable_indiscriminate_delete is None:
+                enable_indiscriminate_delete = False
             time_threshold = hours
-            if time_threshold is not None:
-                time_threshold *= 60  # Convert hours to minutes
+            if enable_indiscriminate_delete:
+                await channel.send("Chaos Mode Activated")
+                self.config.set_channel(channel.id, time_threshold=0, max_messages=0, enable_indiscriminate_delete=enable_indiscriminate_delete)
 
-            self.config.set_channel(channel.id, time_threshold=time_threshold, max_messages=messages)
+            else:
+                if time_threshold is not None:
+                    time_threshold *= 60  # Convert hours to minutes
 
-            # Send to the TARGET channel to let its users know of the change.
-            if hours is not None and messages is not None:
-                await channel.send(f"Auto-delete settings for this channel have been updated: messages older than {hours} hours will be deleted, and there will be a maximum of {messages} messages.")
-            elif hours is not None:
-                await channel.send(f"Auto-delete settings for this channel have been updated: messages older than {hours} hours will be deleted.")
-            elif messages is not None:
-                await channel.send(f"Auto-delete settings for this channel have been updated: there will be a maximum of {messages} messages.")
+                self.config.set_channel(channel.id, time_threshold=time_threshold, max_messages=messages, enable_indiscriminate_delete=enable_indiscriminate_delete)
+
+                # Send to the TARGET channel to let its users know of the change.
+                if hours is not None and messages is not None:
+                    await channel.send(f"Auto-delete settings for this channel have been updated: messages older than {hours} hours will be deleted, and there will be a maximum of {messages} messages.")
+                elif hours is not None:
+                    await channel.send(f"Auto-delete settings for this channel have been updated: messages older than {hours} hours will be deleted.")
+                elif messages is not None:
+                    await channel.send(f"Auto-delete settings for this channel have been updated: there will be a maximum of {messages} messages.")
             # Then respond to the command.
             if interaction.channel != channel:
                 await interaction.response.send_message(f"Auto-delete settings for {channel.mention} have been updated. A message was sent to the channel to let its users know of the setting change.")
