@@ -12,6 +12,7 @@ import config
 from melodelete_commands import AutodeleteCommands
 
 from typing import Optional, Tuple, Sequence
+import random
 
 logger = logging.getLogger("melodelete")
 
@@ -37,6 +38,9 @@ class Melodelete(commands.Bot):
         # reconnection logic and thus will end up calling this event whenever a RESUME
         # request fails.
         self.started = False
+
+        # Additions for crazy 6
+        self.sixMode = {}  # keys will be message Id and values will be persistence lifetime
 
         super().__init__(commands.when_mentioned, intents=intents, help_command=None, http_trace=trace_config)
 
@@ -101,7 +105,7 @@ class Melodelete(commands.Bot):
         if channel and self.config.is_channel_set(payload.channel_id):
             logger.info(f"{len(payload.message_ids)} messages deleted in #{channel.name} (ID: {payload.channel_id})")
 
-    async def get_channel_deletable_messages(self, channel, time_threshold: Optional[int], max_messages: Optional[int]) -> Sequence[discord.Message]:
+    async def get_channel_deletable_messages(self, channel, time_threshold: Optional[int], max_messages: Optional[int], usesCrazy6Rules:Optional[bool]) -> Sequence[discord.Message]:
         """Scans the given channel for messages that can be deleted given the current
            configuration and returns a sequence of those messages.
 
@@ -115,6 +119,24 @@ class Melodelete(commands.Bot):
              A sequence of discord.Message objects that represent deletable
              messages."""
         messages = []  # fallback if no criteria
+        if usesCrazy6Rules is not None:
+            if usesCrazy6Rules:
+                # list all messagesmessages
+                messageList = [message async for message in channel.history(limit=None, oldest_first=True) if not message.pinned]
+                for message in messageList:
+                    # there are more efficient ways to do this but don't optimize too soon
+                    if message.id in self.sixMode.keys():
+                        maxPersistenceTimeMessage = self.sixMode[message]
+                        # calcualte the age  of the message
+                        messageAge = datetime.now(timezone.utc) - message.created_at
+                        if messageAge.seconds>=maxPersistenceTimeMessage: # if the message is old enough add it to the delete queue and pop it
+                            # from the dict
+                            messages.append(message) # set the message for delete
+                            _ = self.sixMode.pop(message)
+                    else:
+                        self.sixMode[message]=self.determineTimeThreshold() # generates a random persistence time for the message
+                return messages  # return to bypass all of the rest of the logic
+
         if time_threshold is not None:  # and max_messages is to be determined
             time_cutoff = datetime.now(timezone.utc) - timedelta(minutes=time_threshold)
             if max_messages:  # if both criteria
@@ -211,13 +233,14 @@ class Melodelete(commands.Bot):
             channel_config = self.config.get_channel_config(channel_id)
             time_threshold = channel_config.get("time_threshold", None)
             max_messages = channel_config.get("max_messages", None)
+            usesCrazySixRules = channel_config.get('usesCrazy6Rules',None)
             try:
                 channel = self.get_channel(channel_id) or await self.fetch_channel(channel_id)
             except discord.NotFound:
                 channel = None
             if channel:
                 try:
-                    deletable_messages = await self.get_channel_deletable_messages(channel, time_threshold=time_threshold, max_messages=max_messages)
+                    deletable_messages = await self.get_channel_deletable_messages(channel, time_threshold=time_threshold, max_messages=max_messages,usesCrazy6Rules=usesCrazy6Rules)
                     logger.info(f"#{channel.name} (ID: {channel_id}) has {len(deletable_messages)} messages to delete.")
                     to_delete.append((channel, deletable_messages))
                 except Exception as e:
@@ -231,6 +254,18 @@ class Melodelete(commands.Bot):
                 await self.delete_channel_deletable_messages(deletable_messages)
             except Exception as e:
                 logger.exception(f"Failed to delete messages in #{channel.name} (ID: {channel.id})", exc_info=e)
+
+    def determineTimeThreshold(self):
+        # 90% to be a six second message. 9% to be a 6 minute message. 1% to be a
+        persistenceTime = 6 # assuming this is 6 secondes. come back to this
+
+        diceRoll = random.random()
+        if diceRoll>=0.9:
+            persistenceTime *=60  # makes this 6 minutes or  360 seconds
+
+        if diceRoll>=0.99:
+            persistenceTime*=60 # here we end up with 21600 seconds
+        return persistenceTime
 
 if __name__ == '__main__':
     # Configure logging
