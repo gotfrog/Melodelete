@@ -132,16 +132,18 @@ class Melodelete(commands.Bot):
                 messageList = [message async for message in channel.history(limit=None, oldest_first=True) if not message.pinned]
                 for message in messageList:
                     # there are more efficient ways to do this but don't optimize too soon
-                    if message.id in self.sixMode.keys():
+                    if message in self.sixMode.keys():
                         maxPersistenceTimeMessage = self.sixMode[message]
                         # calcualte the age  of the message
                         messageAge = datetime.now(timezone.utc) - message.created_at
-                        if messageAge.seconds>=maxPersistenceTimeMessage: # if the message is old enough add it to the delete queue and pop it
+                        if abs(messageAge.seconds)>=maxPersistenceTimeMessage: # if the message is old enough add it to the delete queue and pop it
                             # from the dict
+                            logger.info(f'message: {message.id}  is {abs(messageAge.seconds)} old. Set for delete')
                             messages.append(message) # set the message for delete
                             _ = self.sixMode.pop(message)
                     else:
                         self.sixMode[message]=self.determineTimeThreshold() # generates a random persistence time for the message
+                        logger.info(f'message: {message.id} has been set with a time of {self.sixMode[message]}')
                 return messages  # return to bypass all of the rest of the logic
 
         if time_threshold is not None:  # and max_messages is to be determined
