@@ -60,13 +60,13 @@ class AutodeleteCommands(app_commands.Group):
     @allowed_roles_only()
     async def config(self, interaction: discord.Interaction,
                      channel: Optional[discord.TextChannel], hours: Optional[int]
-                     , enableCrazySix:Optional[bool], messages: Optional[int]
+                     , messages: Optional[int], enableCrazy6rules:Optional[bool]
                      ) -> None:
         """View or set a channel's auto-delete settings"""
         if channel is None:
             channel = interaction.channel
 
-        if hours is None and messages is None and enableCrazySix is None: # shows channel config
+        if hours is None and messages is None and enableCrazy6rules is None: # shows channel config
             channel_config = self.config.get_channel_config(channel.id)
             if channel_config is not None:
                 time_threshold_hours = f"{channel_config['time_threshold'] // 60} hours" if "time_threshold" in channel_config and channel_config["time_threshold"] is not None else "Not set"
@@ -79,7 +79,7 @@ class AutodeleteCommands(app_commands.Group):
             if time_threshold is not None:
                 time_threshold *= 60  # Convert hours to minutes
 
-            self.config.set_channel(channel.id, time_threshold=time_threshold, max_messages=messages, usesCrazy6Rules=enableCrazySix)
+            self.config.set_channel(channel.id, time_threshold=time_threshold, max_messages=messages, usesCrazy6Rules=enableCrazy6rules)
 
             # Send to the TARGET channel to let its users know of the change.
             if hours is not None and messages is not None:
