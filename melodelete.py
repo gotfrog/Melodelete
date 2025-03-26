@@ -240,7 +240,7 @@ class Melodelete(commands.Bot):
                 channel = None
             if channel:
                 try:
-                    deletable_messages = await self.get_channel_deletable_messages(channel, time_threshold=time_threshold, max_messages=max_messages,usesCrazy6Rules=usesCrazy6Rules)
+                    deletable_messages = await self.get_channel_deletable_messages(channel, time_threshold=time_threshold, max_messages=max_messages,usesCrazy6Rules=usesCrazySixRules)
                     logger.info(f"#{channel.name} (ID: {channel_id}) has {len(deletable_messages)} messages to delete.")
                     to_delete.append((channel, deletable_messages))
                 except Exception as e:

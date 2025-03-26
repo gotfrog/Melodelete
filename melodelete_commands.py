@@ -59,8 +59,9 @@ class AutodeleteCommands(app_commands.Group):
                            messages="Set the maximum number of recent messages to keep")
     @allowed_roles_only()
     async def config(self, interaction: discord.Interaction,
-                     channel: Optional[discord.TextChannel], hours: Optional[int], enableCrazySix:Optional[bool], messages: Optional[int]
-                     , enableCrazy6:Optional[bool]) -> None:
+                     channel: Optional[discord.TextChannel], hours: Optional[int]
+                     , enableCrazySix:Optional[bool], messages: Optional[int]
+                     ) -> None:
         """View or set a channel's auto-delete settings"""
         if channel is None:
             channel = interaction.channel
@@ -78,7 +79,7 @@ class AutodeleteCommands(app_commands.Group):
             if time_threshold is not None:
                 time_threshold *= 60  # Convert hours to minutes
 
-            self.config.set_channel(channel.id, time_threshold=time_threshold, max_messages=messages, usesCrazy6Rules=enableCrazy6)
+            self.config.set_channel(channel.id, time_threshold=time_threshold, max_messages=messages, usesCrazy6Rules=enableCrazySix)
 
             # Send to the TARGET channel to let its users know of the change.
             if hours is not None and messages is not None:
