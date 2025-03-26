@@ -104,7 +104,8 @@ class Melodelete(commands.Bot):
         channel = self.get_channel(payload.channel_id) or await self.fetch_channel(payload.channel_id)
 
         if channel and self.config.is_channel_set(payload.channel_id):
-            logger.info(f"Message deleted in #{channel.name} (ID: {payload.channel_id})")
+            ...
+            #logger.info(f"Message deleted in #{channel.name} (ID: {payload.channel_id})")
 
     async def on_raw_bulk_message_delete(self, payload: discord.RawBulkMessageDeleteEvent) -> None:
         channel = self.get_channel(payload.channel_id) or await self.fetch_channel(payload.channel_id)
