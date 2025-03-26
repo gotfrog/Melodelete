@@ -88,12 +88,12 @@ class Melodelete(commands.Bot):
         await self.tree.sync()
 
         while True:
-            logger.info("-- New scan --")
+            #logger.info("-- New scan --")
             try:
                 await self.delete_old_messages()
             except Exception as e:
                 logger.exception("Uncaught exception in main loop iteration; waiting until the next one", e)
-            await asyncio.sleep(1)
+            await asyncio.sleep(2)
 
     async def on_raw_message_delete(self, payload: discord.RawMessageDeleteEvent) -> None:
         # prevent a memory leak when users delete their own messages
@@ -138,12 +138,12 @@ class Melodelete(commands.Bot):
                         messageAge = datetime.now(timezone.utc) - message.created_at
                         if abs(messageAge.seconds)>=maxPersistenceTimeMessage: # if the message is old enough add it to the delete queue and pop it
                             # from the dict
-                            logger.info(f'message: {message.id}  is {abs(messageAge.seconds)} old. Set for delete')
+                            #logger.info(f'message: {message.id}  is {abs(messageAge.seconds)} old. Set for delete')
                             messages.append(message) # set the message for delete
                             _ = self.sixMode.pop(message)
                     else:
                         self.sixMode[message]=self.determineTimeThreshold() # generates a random persistence time for the message
-                        logger.info(f'message: {message.id} has been set with a time of {self.sixMode[message]}')
+                        #logger.info(f'message: {message.id} has been set with a time of {self.sixMode[message]}')
                 return messages  # return to bypass all of the rest of the logic
 
         if time_threshold is not None:  # and max_messages is to be determined
@@ -250,7 +250,7 @@ class Melodelete(commands.Bot):
             if channel:
                 try:
                     deletable_messages = await self.get_channel_deletable_messages(channel, time_threshold=time_threshold, max_messages=max_messages,usesCrazy6Rules=usesCrazySixRules)
-                    logger.info(f"#{channel.name} (ID: {channel_id}) has {len(deletable_messages)} messages to delete.")
+                    #logger.info(f"#{channel.name} (ID: {channel_id}) has {len(deletable_messages)} messages to delete.")
                     to_delete.append((channel, deletable_messages))
                 except Exception as e:
                     logger.exception(f"Failed to scan for messages to delete in #{channel.name} (ID: {channel_id})", exc_info=e)
