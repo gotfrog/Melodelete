@@ -1,3 +1,5 @@
+from cgitb import enable
+
 import discord
 from discord.ext import commands
 from discord import app_commands
@@ -94,6 +96,11 @@ class Melodelete(commands.Bot):
             await asyncio.sleep(max(self.config.get_scan_interval(), 2) * 60)
 
     async def on_raw_message_delete(self, payload: discord.RawMessageDeleteEvent) -> None:
+        # prevent a memory leak when users delete their own messages
+        killList = [key for key in self.sixMode.keys() if key.id == payload.message_id]
+        if killList:
+            for message in killList:
+                self.sixMode.pop(message)
         channel = self.get_channel(payload.channel_id) or await self.fetch_channel(payload.channel_id)
 
         if channel and self.config.is_channel_set(payload.channel_id):
