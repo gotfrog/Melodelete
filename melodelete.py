@@ -84,7 +84,7 @@ class Melodelete(commands.Bot):
         self.started = True
 
         logger.info("Registering slash commands...")
-        self.tree.add_command(AutodeleteCommands(self, self.config, name="autodelete"))
+        self.tree.add_command(AutodeleteCommands(self, self.config, name="crazy6delete"))
         await self.tree.sync()
 
         while True:
